@@ -15,11 +15,11 @@ import ktx.app.KtxScreen
 import ktx.graphics.use
 
 class SoftBodyCarScreen: KtxScreen {
-    val iterations: Int = 1 shl 2
+    val iterations: Int = 1 shl 0
     private val mouseForce = 100f
     private val camera = OrthographicCamera()
     private val viewport = FillViewport(90f, 60f, camera)
-    private val sb = SoftBodyCar(Vector2(1f, 1f), 50f)
+    private val sb = SoftBodyCar(Vector2(1f, 2f), 50f)
     private lateinit var selectedPointMass: PointMass
 
     private val alwaysRunning = true
@@ -40,7 +40,12 @@ class SoftBodyCarScreen: KtxScreen {
             (if (Gdx.input.isKeyPressed(Input.Keys.W)) 1f else 0f) +
                     (if (Gdx.input.isKeyPressed(Input.Keys.S)) -1f else 0f)
 
-        sb.setDrive(steer * .25f, throttle)
+        if (steer != 0f && throttle == 0f) {
+            sb.setDrive(steer * .5f, .5f)
+        } else {
+            sb.setDrive(steer * .5f, throttle)
+        }
+
 //        val dt = if (delta == 0f) (1/60f) else delta
         if (Gdx.input.justTouched()) {
             val mousePos = viewport.unproject(Vector2(Gdx.input.x.toFloat(), Gdx.input.y.toFloat()))

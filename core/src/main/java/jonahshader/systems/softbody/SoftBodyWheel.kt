@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2
 import jonahshader.systems.physics.DrivingSurface
 import jonahshader.systems.physics.WheelParams
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 
 class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: PointMass, wp: WheelParams, var surface: DrivingSurface): SoftBodyForce(pointMass) {
     private val wheelCircumference = (wp.wheelDiameter * PI).toFloat()
@@ -15,6 +16,13 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
 
     private val targetForce = Vector2()
     private val direction = Vector2(1f, 0f)
+
+    init {
+        println("maxSpeed $maxSpeed")
+        println("maxWheelTorque $maxWheelTorque")
+        println("stallForce $stallForce")
+        lineMagnitudeScalar = .25f
+    }
 
     fun updateTargetForce(targetForce: Vector2) {
         this.targetForce.set(targetForce)
@@ -42,7 +50,11 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
 
         // restrict force
         if (force.len2() > maxForceAtVelocity * maxForceAtVelocity) {
-            force.setLength(maxForceAtVelocity)
+            if (maxForceAtVelocity < 0) {
+                force.rotateRad(PI.toFloat())
+            }
+            force.setLength(maxForceAtVelocity.absoluteValue)
+            println("restricting force")
         }
 
 //        var requiredLateralFrictionForce = lateralDirection.dot(springForceLocal)
@@ -55,6 +67,9 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
         // check friction
         if (force.len2() > maxStaticFrictionForce * maxStaticFrictionForce) {
             force.setLength(maxKineticFrictionForce)
+            color.set(1f, 1f, 0f, 1f)
+        } else {
+            color.set(0f, 1f, 0f, 1f)
         }
 //        force.rotateRad(pointMassAngle)
         super.update(sbCenter, dt)
