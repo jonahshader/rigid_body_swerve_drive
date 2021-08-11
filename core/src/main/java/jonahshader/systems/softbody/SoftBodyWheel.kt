@@ -5,7 +5,7 @@ import jonahshader.systems.physics.DrivingSurface
 import jonahshader.systems.physics.WheelParams
 import kotlin.math.PI
 
-class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: PointMass, wp: WheelParams, var surface: DrivingSurface): Component {
+class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: PointMass, wp: WheelParams, var surface: DrivingSurface): SoftBodyForce(pointMass) {
     private val wheelCircumference = (wp.wheelDiameter * PI).toFloat()
     private val maxSpeed = ((wp.motorMaxRPM / 60) * wheelCircumference) * wp.motorToWheelRatio
     private val maxWheelTorque = wp.motorMaxTorque / wp.motorToWheelRatio
@@ -13,7 +13,6 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
     var maxStaticFrictionForce = surface.staticCoefficient * stallForce
     var maxKineticFrictionForce = surface.kineticCoefficient * stallForce
 
-    override val force = Vector2()
     private val targetForce = Vector2()
     private val direction = Vector2(1f, 0f)
 
@@ -26,45 +25,70 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
             direction.set(targetForce).nor()
     }
 
-    override fun update(dt: Float) {
-        // update static and kinetic
-        // copy target force to force
-        val sbCenter = softBody.getCenter()
+    override fun update(sbCenter: Vector2, dt: Float) {
+        // copy target force into force
         force.set(targetForce)
-        val currentVelocity = Vector2(pointMass.velocity).rotateRad(-pointMass.getAngle(sbCenter)).dot(direction)
-        val maxForceAtVelocity = calculateMaxForceAtVelocity(currentVelocity)
+
+
+        // transform everything into local space. force is already in local space. need to unrotate massPoint things
+        val directionAngle = direction.angleRad()
+        val pointMassAngle = pointMass.getAngle(sbCenter)
+        val velocityLocal = Vector2(pointMass.velocity).rotateRad(-pointMassAngle)
+        val springForceLocal = Vector2(pointMass.force).rotateRad(-pointMassAngle)
+        val lateralDirection = Vector2(direction).rotateRad(PI.toFloat()/2f)
+
+        val velocityInWheelDirection = velocityLocal.dot(direction)
+        val maxForceAtVelocity = calculateMaxForceAtVelocity(velocityInWheelDirection)
 
         // restrict force
         if (force.len2() > maxForceAtVelocity * maxForceAtVelocity) {
             force.setLength(maxForceAtVelocity)
         }
 
-//        // apply sideways friction force
-//        // get sideways force
-//        val sidewaysDirection = Vector2(direction).rotateRad(PI.toFloat()/2f)
-//        val sidewaysForce = Vector2(pointMass.force).dot(sidewaysDirection)
-        val pointMassForceUnrotated = Vector2(pointMass.force).rotateRad(-pointMass.getAngle(sbCenter))
+//        var requiredLateralFrictionForce = lateralDirection.dot(springForceLocal)
+//        requiredLateralFrictionForce += lateralDirection.dot(velocityLocal) * pointMass.mass / dt
+        val requiredLateralFrictionForce = lateralDirection.dot(velocityLocal) * pointMass.mass * .25f / dt
 
-        // counteract force
-        force.add(-pointMassForceUnrotated.x, 0f)
+        val lateralForceVector = Vector2(lateralDirection).scl(requiredLateralFrictionForce)
+        force.sub(lateralForceVector)
 
         // check friction
         if (force.len2() > maxStaticFrictionForce * maxStaticFrictionForce) {
             force.setLength(maxKineticFrictionForce)
-            // TODO: drifting = true
         }
+//        force.rotateRad(pointMassAngle)
+        super.update(sbCenter, dt)
 
-        force.rotateRad(pointMass.getAngle(sbCenter))
+//        // update static and kinetic
+//        // copy target force to force
+//        val sbCenter = softBody.getCenter()
+//        force.set(targetForce)
+//        val currentVelocity = Vector2(pointMass.velocity).rotateRad(-pointMass.getAngle(sbCenter)).dot(direction)
+//        val maxForceAtVelocity = calculateMaxForceAtVelocity(currentVelocity)
+//
+//        // restrict force
+//        if (force.len2() > maxForceAtVelocity * maxForceAtVelocity) {
+//            force.setLength(maxForceAtVelocity)
+//        }
+//
+////        // apply sideways friction force
+////        // get sideways force
+////        val sidewaysDirection = Vector2(direction).rotateRad(PI.toFloat()/2f)
+////        val sidewaysForce = Vector2(pointMass.force).dot(sidewaysDirection)
+//        val pointMassForceUnrotated = Vector2(pointMass.force).rotateRad(-pointMass.getAngle(sbCenter))
+//
+//        // counteract force
+//        force.add(-pointMassForceUnrotated.x, 0f)
+//
+//        // check friction
+//        if (force.len2() > maxStaticFrictionForce * maxStaticFrictionForce) {
+//            force.setLength(maxKineticFrictionForce)
+//            // TODO: drifting = true
+//        }
+//
+//        force.rotateRad(pointMass.getAngle(sbCenter))
+//
 
-
-    }
-
-    override fun render() {
-
-    }
-
-    override fun applyForce() {
-        pointMass.force.add(force)
     }
 
     private fun calculateMaxForceAtVelocity(velocity: Float) = (1-(velocity / maxSpeed)) * stallForce

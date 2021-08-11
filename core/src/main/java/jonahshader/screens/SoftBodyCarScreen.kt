@@ -40,7 +40,7 @@ class SoftBodyCarScreen: KtxScreen {
             (if (Gdx.input.isKeyPressed(Input.Keys.W)) 1f else 0f) +
                     (if (Gdx.input.isKeyPressed(Input.Keys.S)) -1f else 0f)
 
-        sb.setDrive(steer * .5f, throttle)
+        sb.setDrive(steer * .25f, throttle)
 //        val dt = if (delta == 0f) (1/60f) else delta
         if (Gdx.input.justTouched()) {
             val mousePos = viewport.unproject(Vector2(Gdx.input.x.toFloat(), Gdx.input.y.toFloat()))
@@ -76,12 +76,12 @@ class SoftBodyCarScreen: KtxScreen {
             }
         }
 
-        println("average velocity: ${sb.getAverageVelocity()}")
-        println("average angular vel: ${sb.getRotationalVelocityAroundCenter()}")
-        println("kinetic energy pointwise: ${sb.getTotalKineticEnergyPointWise()}")
-        println("kinetic energy bodywise: ${sb.getTotalKineticEnergyBodyWise()}")
-        println("angular kinetic energy bodywise: ${sb.getAngularKineticEnergyBodyWise()}")
-        println("translational kinetic energy: ${sb.getTranslationalKineticEnergyBodyWise()}")
+//        println("average velocity: ${sb.getAverageVelocity()}")
+//        println("average angular vel: ${sb.getRotationalVelocityAroundCenter()}")
+//        println("kinetic energy pointwise: ${sb.getTotalKineticEnergyPointWise()}")
+//        println("kinetic energy bodywise: ${sb.getTotalKineticEnergyBodyWise()}")
+//        println("angular kinetic energy bodywise: ${sb.getAngularKineticEnergyBodyWise()}")
+//        println("translational kinetic energy: ${sb.getTranslationalKineticEnergyBodyWise()}")
 
 
         ScreenUtils.clear(.1f, .1f, .1f, 1f)

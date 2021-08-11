@@ -61,9 +61,11 @@ open class SoftBody {
     fun update(dt: Float) {
         if (structureModified) {
             updatePointMassAngles()
+            structureModified = false
         }
+        val center = getCenter()
         springs.forEach{ it.update(dt) }
-        components.forEach { it.update(dt) }
+        components.forEach { it.update(center, dt) }
         components.forEach { it.applyForce() }
         pointMasses.forEach{ it.update(dt) }
     }
@@ -71,6 +73,7 @@ open class SoftBody {
     fun render() {
         springs.forEach{ it.render() }
         pointMasses.forEach{ it.render() }
+        components.forEach{ it.render() }
     }
 
     fun getAverageVelocity(): Vector2 {
