@@ -11,8 +11,10 @@ import jonahshader.systems.softbody.PointMass
 import jonahshader.systems.softbody.SoftBody
 import jonahshader.systems.softbody.SoftBodyCar
 import jonahshader.systems.softbody.SpringConstants
+import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
 import ktx.graphics.use
+import kotlin.math.pow
 
 class SoftBodyCarScreen: KtxScreen {
     val iterations: Int = 1 shl 0
@@ -21,11 +23,20 @@ class SoftBodyCarScreen: KtxScreen {
     private val viewport = FillViewport(90f, 60f, camera)
     private val sb = SoftBodyCar(Vector2(1f, 2f), 50f)
     private lateinit var selectedPointMass: PointMass
+    private var steerScalar = .5f
 
     private val alwaysRunning = true
 
     init {
         selectedPointMass = sb.pointMasses[0]
+
+        Gdx.input.inputProcessor = object : KtxInputAdapter {
+            override fun scrolled(amountX: Float, amountY: Float): Boolean {
+                steerScalar *= 2f.pow(amountY)
+                println("steer scalar: $steerScalar")
+                return true
+            }
+        }
     }
 
     override fun show() {
@@ -41,9 +52,9 @@ class SoftBodyCarScreen: KtxScreen {
                     (if (Gdx.input.isKeyPressed(Input.Keys.S)) -1f else 0f)
 
         if (steer != 0f && throttle == 0f) {
-            sb.setDrive(steer * .5f, .5f)
+            sb.setDrive(steer * steerScalar * .5f, .5f, -1f)
         } else {
-            sb.setDrive(steer * .5f, throttle)
+            sb.setDrive(steer * steerScalar, throttle, 1f)
         }
 
 //        val dt = if (delta == 0f) (1/60f) else delta
@@ -60,6 +71,7 @@ class SoftBodyCarScreen: KtxScreen {
 
             }
         }
+
 
         if (Gdx.input.isTouched) {
             val mousePos = viewport.unproject(Vector2(Gdx.input.x.toFloat(), Gdx.input.y.toFloat()))

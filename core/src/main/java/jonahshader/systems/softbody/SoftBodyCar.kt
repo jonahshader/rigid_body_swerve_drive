@@ -5,6 +5,7 @@ import jonahshader.systems.physics.WheelParams
 import jonahshader.systems.physics.iceSurface
 import jonahshader.systems.physics.tarmacSurface
 import kotlin.math.PI
+import kotlin.math.max
 
 class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
     private val topLeftPoint = PointMass(mass/4, Vector2(-size.x/2, size.y/2))
@@ -14,8 +15,8 @@ class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
 //    private val centerPoint = PointMass(mass/5, Vector2())
 
     private val sc = SpringConstants(100 * mass, mass * 10)
-    private val surface = tarmacSurface
-    private val wp = WheelParams(8f * 0.0254f, 80f, 8000f, 1/3f)
+    private val surface = iceSurface
+    private val wp = WheelParams(8f * 0.0254f, 200f, 16000f, 1/3f)
 
     private val topLeftWheel = SoftBodyWheel(this, topLeftPoint, wp, surface)
     private val topRightWheel = SoftBodyWheel(this, topRightPoint, wp, surface)
@@ -42,7 +43,7 @@ class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
 //        addComponent(tempForce2)
     }
 
-    fun setDrive(steer: Float, throttle: Float) {
+    fun setDrive(steer: Float, throttle: Float, balance: Float) {
         val throttleVector = Vector2(0f, throttle)
         val bottomMiddlePos = Vector2(0f, -size.y/2f)
         val topLeftForce = Vector2(topLeftPoint.originalPosition).sub(bottomMiddlePos)
@@ -77,10 +78,20 @@ class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
             bottomRightForce.scl(invMaxMag)
         }
 
-        topLeftForce.scl(topLeftWheel.stallForce)
-        topRightForce.scl(topLeftWheel.stallForce)
-        bottomLeftForce.scl(topLeftWheel.stallForce)
-        bottomRightForce.scl(topLeftWheel.stallForce)
+        val frontScale: Float
+        val backScale: Float
+        if (balance < 0) {
+            frontScale = max(1f + balance, 0.01f)
+            backScale = 1f
+        } else {
+            frontScale = 1f
+            backScale = max(1f - balance, 0.01f)
+        }
+
+        topLeftForce.scl(topLeftWheel.stallForce * frontScale)
+        topRightForce.scl(topLeftWheel.stallForce * frontScale)
+        bottomLeftForce.scl(topLeftWheel.stallForce * backScale)
+        bottomRightForce.scl(topLeftWheel.stallForce * backScale)
 
         topLeftWheel.updateTargetForce(topLeftForce)
         topRightWheel.updateTargetForce(topRightForce)

@@ -59,7 +59,7 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
 
 //        var requiredLateralFrictionForce = lateralDirection.dot(springForceLocal)
 //        requiredLateralFrictionForce += lateralDirection.dot(velocityLocal) * pointMass.mass / dt
-        val requiredLateralFrictionForce = lateralDirection.dot(velocityLocal) * pointMass.mass * .25f / dt
+        val requiredLateralFrictionForce = lateralDirection.dot(velocityLocal) * pointMass.mass * .5f / dt
 
         val lateralForceVector = Vector2(lateralDirection).scl(requiredLateralFrictionForce)
         force.sub(lateralForceVector)
