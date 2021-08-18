@@ -7,7 +7,7 @@ import ktx.math.plusAssign
 class PointMass(val mass: Float, val position: Vector2) {
     val originalPosition = Vector2(position)
     val velocity = Vector2()
-    private val acceleration = Vector2()
+    val acceleration = Vector2()
     val force = Vector2()
     var angleFromCenterOfSoftBody = 0f
 

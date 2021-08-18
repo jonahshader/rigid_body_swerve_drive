@@ -1,13 +1,18 @@
 package jonahshader.systems.softbody
 
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.math.Vector3
 import jonahshader.systems.physics.WheelParams
 import jonahshader.systems.physics.iceSurface
 import jonahshader.systems.physics.tarmacSurface
 import kotlin.math.PI
 import kotlin.math.max
 
-class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
+// z is height
+class SoftBodyCar(private val size: Vector3, private val mass: Float): SoftBody() {
+    companion object {
+        const val GRAVITY = 9.80665f
+    }
     private val topLeftPoint = PointMass(mass/4, Vector2(-size.x/2, size.y/2))
     private val topRightPoint = PointMass(mass/4, Vector2(size.x/2, size.y/2))
     private val bottomLeftPoint = PointMass(mass/4, Vector2(-size.x/2, -size.y/2))
@@ -15,13 +20,13 @@ class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
 //    private val centerPoint = PointMass(mass/5, Vector2())
 
     private val sc = SpringConstants(100 * mass, mass * 10)
-    private val surface = iceSurface
-    private val wp = WheelParams(8f * 0.0254f, 200f, 16000f, 1/3f)
+    private val surface = tarmacSurface
+    private val wp = WheelParams(8f * 0.0254f, 25f, 8000f, 1/3f)
 
-    private val topLeftWheel = SoftBodyWheel(this, topLeftPoint, wp, surface)
-    private val topRightWheel = SoftBodyWheel(this, topRightPoint, wp, surface)
-    private val bottomLeftWheel = SoftBodyWheel(this, bottomLeftPoint, wp, surface)
-    private val bottomRightWheel = SoftBodyWheel(this, bottomRightPoint, wp, surface)
+    private val topLeftWheel = SoftBodyWheel(topLeftPoint, wp, surface)
+    private val topRightWheel = SoftBodyWheel(topRightPoint, wp, surface)
+    private val bottomLeftWheel = SoftBodyWheel(bottomLeftPoint, wp, surface)
+    private val bottomRightWheel = SoftBodyWheel(bottomRightPoint, wp, surface)
 
     init {
         addFullyConnectedPoint(topLeftPoint, sc)
@@ -41,6 +46,25 @@ class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
 //        val tempForce2 = SoftBodyForce(bottomRightPoint)
 //        tempForce2.force.y = -1f
 //        addComponent(tempForce2)
+    }
+
+    override fun update(dt: Float) {
+        val accelAlignedScaled = Vector2(getAverageAcceleration()).rotateRad(-getAngleRad()).scl(1/GRAVITY)
+        var xLoadChangePerAccelRatio = size.z / size.x
+        var yLoadChangePerAccelRatio = size.z / size.y
+
+        var baseLoad = mass / 4f // four wheel design, assuming center of gravity is in the center of the car
+
+        var xLoadDelta = (xLoadChangePerAccelRatio * baseLoad) * accelAlignedScaled.x
+        val yLoadDelta = (yLoadChangePerAccelRatio * baseLoad) * accelAlignedScaled.y
+
+        topLeftWheel.load = ((baseLoad + xLoadDelta) - yLoadDelta).coerceAtLeast(0f)
+        topRightWheel.load = ((baseLoad - xLoadDelta) - yLoadDelta).coerceAtLeast(0f)
+        bottomLeftWheel.load = ((baseLoad + xLoadDelta) + yLoadDelta).coerceAtLeast(0f)
+        bottomRightWheel.load = ((baseLoad - xLoadDelta) + yLoadDelta).coerceAtLeast(0f)
+
+
+        super.update(dt)
     }
 
     fun setDrive(steer: Float, throttle: Float, balance: Float) {
@@ -93,9 +117,16 @@ class SoftBodyCar(private val size: Vector2, mass: Float): SoftBody() {
         bottomLeftForce.scl(topLeftWheel.stallForce * backScale)
         bottomRightForce.scl(topLeftWheel.stallForce * backScale)
 
-        topLeftWheel.updateTargetForce(topLeftForce)
-        topRightWheel.updateTargetForce(topRightForce)
-        bottomLeftWheel.updateTargetForce(bottomLeftForce)
-        bottomRightWheel.updateTargetForce(bottomRightForce)
+        if (throttle != 0f) {
+            topLeftWheel.updateDirection(topLeftForce)
+            topRightWheel.updateDirection(topRightForce)
+            bottomLeftWheel.updateDirection(bottomLeftForce)
+            bottomRightWheel.updateDirection(bottomRightForce)
+        }
+        topLeftWheel.updateForce(topLeftForce.len())
+        topRightWheel.updateForce(topRightForce.len())
+        bottomLeftWheel.updateForce(bottomLeftForce.len())
+        bottomRightWheel.updateForce(bottomRightForce.len())
+
     }
 }

@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2
 import jonahshader.systems.dst2
 import ktx.math.component1
 import ktx.math.component2
+import ktx.math.times
 import kotlin.math.pow
 
 open class SoftBody {
@@ -58,7 +59,7 @@ open class SoftBody {
         components += component
     }
 
-    fun update(dt: Float) {
+    open fun update(dt: Float) {
         if (structureModified) {
             updatePointMassAngles()
             structureModified = false
@@ -82,6 +83,30 @@ open class SoftBody {
             avgVel.add(it.velocity.x * it.mass / totalMass, it.velocity.y * it.mass / totalMass)
         }
         return avgVel
+    }
+
+    fun getAverageAcceleration(): Vector2 {
+        val avgAccel = returnVector.setZero()
+        pointMasses.forEach {
+            avgAccel.add(it.acceleration.x * it.mass / totalMass, it.acceleration.y * it.mass / totalMass)
+        }
+        return avgAccel
+    }
+
+    fun getAngleVec(): Vector2 {
+        val center = Vector2(getCenter())
+        val angleVec = returnVector.setZero()
+        val radToAngleVec = tempVector.setZero()
+        pointMasses.forEach {
+            radToAngleVec.set(1f, 0f).rotateRad(it.getAngle(center))
+            angleVec.add(radToAngleVec)
+        }
+        angleVec.nor()
+        return angleVec
+    }
+
+    fun getAngleRad(): Float {
+        return getAngleVec().angleRad()
     }
 
     fun getTotalKineticEnergyPointWise() = pointMasses.fold(0f) { acc, point ->  acc + .5f * point.mass * point.velocity.len2() }

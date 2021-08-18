@@ -1,45 +1,61 @@
 package jonahshader.systems.softbody
 
 import com.badlogic.gdx.math.Vector2
+import jonahshader.RigidBodyApp
 import jonahshader.systems.physics.DrivingSurface
 import jonahshader.systems.physics.WheelParams
+import jonahshader.systems.softbody.SoftBodyCar.Companion.GRAVITY
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 
-class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: PointMass, wp: WheelParams, var surface: DrivingSurface): SoftBodyForce(pointMass) {
+class SoftBodyWheel(private val pointMass: PointMass, wp: WheelParams, var surface: DrivingSurface): SoftBodyForce(pointMass) {
+
     private val wheelCircumference = (wp.wheelDiameter * PI).toFloat()
     private val maxSpeed = ((wp.motorMaxRPM / 60) * wheelCircumference) * wp.motorToWheelRatio
     private val maxWheelTorque = wp.motorMaxTorque / wp.motorToWheelRatio
     val stallForce = (maxWheelTorque / wheelCircumference)
-    var maxStaticFrictionForce = surface.staticCoefficient * stallForce
-    var maxKineticFrictionForce = surface.kineticCoefficient * stallForce
+    var load = pointMass.mass
+//    var maxStaticFrictionForce = surface.staticCoefficient * stallForce
+//    var maxKineticFrictionForce = surface.kineticCoefficient * stallForce
+//    var maxStaticFrictionForce = surface.staticCoefficient * g * load
+//    var maxKineticFrictionForce = surface.kineticCoefficient * g * load
+    private val maxStaticFrictionForce: Float
+    get() = surface.staticCoefficient * GRAVITY * load
+    private val maxKineticFrictionForce: Float
+    get() = surface.kineticCoefficient * GRAVITY * load
 
     private val targetForce = Vector2()
     private val direction = Vector2(1f, 0f)
 
     init {
-        println("maxSpeed $maxSpeed")
-        println("maxWheelTorque $maxWheelTorque")
-        println("stallForce $stallForce")
         lineMagnitudeScalar = .25f
     }
 
-    fun updateTargetForce(targetForce: Vector2) {
-        this.targetForce.set(targetForce)
+    fun updateDirection(direction: Vector2) {
+        this.direction.set(direction).nor()
+        val forceMag = targetForce.len()
+        targetForce.set(this.direction).scl(forceMag)
+    }
 
-        this.targetForce.set(targetForce)
-        // if target force is non-zero, update direction with target force
-        if (targetForce.len2() != 0.0f)
-            direction.set(targetForce).nor()
+    fun updateForce(force: Float) {
+        targetForce.set(this.direction).scl(force)
+    }
+
+    override fun render() {
+        super.render()
+        val scaler = ((load / pointMass.mass) * .5f).coerceIn(0f, 1f)
+        RigidBodyApp.shapeDrawer.setColor(1f, 1f, 1f, scaler)
+        RigidBodyApp.shapeDrawer.filledCircle(pointMass.position, scaler)
     }
 
     override fun update(sbCenter: Vector2, dt: Float) {
         // copy target force into force
         force.set(targetForce)
 
+//        println("maxStaticFrictionForce $maxStaticFrictionForce")
+        println("load $load")
 
         // transform everything into local space. force is already in local space. need to unrotate massPoint things
-        val directionAngle = direction.angleRad()
         val pointMassAngle = pointMass.getAngle(sbCenter)
         val velocityLocal = Vector2(pointMass.velocity).rotateRad(-pointMassAngle)
         val springForceLocal = Vector2(pointMass.force).rotateRad(-pointMassAngle)
@@ -59,7 +75,7 @@ class SoftBodyWheel(private val softBody: SoftBody, private val pointMass: Point
 
 //        var requiredLateralFrictionForce = lateralDirection.dot(springForceLocal)
 //        requiredLateralFrictionForce += lateralDirection.dot(velocityLocal) * pointMass.mass / dt
-        val requiredLateralFrictionForce = lateralDirection.dot(velocityLocal) * pointMass.mass * .5f / dt
+        val requiredLateralFrictionForce = ((lateralDirection.dot(velocityLocal) * pointMass.mass * .5f / dt) + lateralDirection.dot(springForceLocal) * .5f) * .5f
 
         val lateralForceVector = Vector2(lateralDirection).scl(requiredLateralFrictionForce)
         force.sub(lateralForceVector)

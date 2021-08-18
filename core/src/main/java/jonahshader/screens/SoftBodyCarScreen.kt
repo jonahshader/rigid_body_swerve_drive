@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.FillViewport
 import jonahshader.RigidBodyApp
@@ -14,6 +15,8 @@ import jonahshader.systems.softbody.SpringConstants
 import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
 import ktx.graphics.use
+import ktx.math.plus
+import ktx.math.times
 import kotlin.math.pow
 
 class SoftBodyCarScreen: KtxScreen {
@@ -21,7 +24,7 @@ class SoftBodyCarScreen: KtxScreen {
     private val mouseForce = 100f
     private val camera = OrthographicCamera()
     private val viewport = FillViewport(90f, 60f, camera)
-    private val sb = SoftBodyCar(Vector2(1f, 2f), 50f)
+    private val sb = SoftBodyCar(Vector3(1f, 2f, .8f), 50f)
     private lateinit var selectedPointMass: PointMass
     private var steerScalar = .5f
 
@@ -52,9 +55,9 @@ class SoftBodyCarScreen: KtxScreen {
                     (if (Gdx.input.isKeyPressed(Input.Keys.S)) -1f else 0f)
 
         if (steer != 0f && throttle == 0f) {
-            sb.setDrive(steer * steerScalar * .5f, .5f, -1f)
+            sb.setDrive(steer * steerScalar * .5f, .5f, -0f)
         } else {
-            sb.setDrive(steer * steerScalar, throttle, 1f)
+            sb.setDrive(steer * steerScalar, throttle, -0f)
         }
 
 //        val dt = if (delta == 0f) (1/60f) else delta
@@ -100,10 +103,19 @@ class SoftBodyCarScreen: KtxScreen {
 //        println("angular kinetic energy bodywise: ${sb.getAngularKineticEnergyBodyWise()}")
 //        println("translational kinetic energy: ${sb.getTranslationalKineticEnergyBodyWise()}")
 
+//        camera.position.x = camera.position.x * .99f + sb.getCenter().x * .01f
+//        camera.position.y = camera.position.y * .99f + sb.getCenter().y * .01f
+        camera.position.x = sb.getCenter().x
+        camera.position.y = sb.getCenter().y
+
+        camera.update()
 
         ScreenUtils.clear(.1f, .1f, .1f, 1f)
         viewport.apply()
         RigidBodyApp.batch.use(camera) {
+            RigidBodyApp.shapeDrawer.setColor(1f, 1f, 1f, 1f)
+//            RigidBodyApp.shapeDrawer.line(sb.getCenter(), Vector2(camera.position.x, camera.position.y), 0.03f)
+            RigidBodyApp.shapeDrawer.line(Vector2(sb.getCenter()), Vector2(sb.getCenter()) + sb.getAverageVelocity(), 0.03f)
             sb.render()
         }
     }
