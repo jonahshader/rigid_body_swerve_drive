@@ -34,10 +34,10 @@ class RigidBodyApp : Game() {
         val track = Environment()
         track.addWall(Wall(Vector2(2f, 0f), Vector2(2f, 10f)))
         track.addWall(Wall(Vector2(-2f, 0f), Vector2(-2f, 10f)))
-        track.addWaypoint(Waypoint(Vector2(2f, 11f), 1f))
-        track.addWaypoint(Waypoint(Vector2(3f, 0f), 1f))
+        track.addWaypoint(Waypoint(Vector2(1f, 11f), 1f))
+        track.addWaypoint(Waypoint(Vector2(10f, 12f), 1f))
 
-        ScreenManager.push(OptimizerDisplayerScreen(GeneticAlgorithm(track, 165 * 1, 1/165f, 10, 0.1f)))
+        ScreenManager.push(OptimizerDisplayerScreen(GeneticAlgorithm(track, 165 * 6, 1/165f, 100, 0.1f)))
 //        ScreenManager.push(SoftBodyCarScreen())
 //        ScreenManager.push(SoftBodyScreen())
     }

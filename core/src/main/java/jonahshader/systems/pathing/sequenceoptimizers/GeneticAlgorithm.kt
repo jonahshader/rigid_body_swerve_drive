@@ -9,6 +9,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import kotlin.math.max
 
 class GeneticAlgorithm(private val env: Environment, private val maxTimeSteps: Int,
                        private var timeStep: Float, private val popSize: Int,
@@ -50,9 +51,11 @@ class GeneticAlgorithm(private val env: Environment, private val maxTimeSteps: I
         copyLock.lock()
         bestSequence = CarControlSequence(sequences[maxFitnessIndex])
         copyLock.unlock()
-        sequences.forEach {
+        sequences[0].set(bestSequence)
+        for (i in 1 until sequences.size) {
+            val it = sequences[i]
             it.set(bestSequence)
-            it.mutate(rand, maxMutationRate)
+            it.mutate(rand, maxMutationRate * i.toFloat() / sequences.size)
         }
 
         bestFitness = maxFitness

@@ -53,7 +53,7 @@ class SoftBodyWheel(private val pointMass: PointMass, wp: WheelParams, var surfa
         force.set(targetForce)
 
 //        println("maxStaticFrictionForce $maxStaticFrictionForce")
-        println("load $load")
+//        println("load $load")
 
         // transform everything into local space. force is already in local space. need to unrotate massPoint things
         val pointMassAngle = pointMass.getAngle(sbCenter)
@@ -70,7 +70,7 @@ class SoftBodyWheel(private val pointMass: PointMass, wp: WheelParams, var surfa
                 force.rotateRad(PI.toFloat())
             }
             force.setLength(maxForceAtVelocity.absoluteValue)
-            println("restricting force")
+//            println("restricting force")
         }
 
 //        var requiredLateralFrictionForce = lateralDirection.dot(springForceLocal)

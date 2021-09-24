@@ -37,7 +37,9 @@ class OptimizerDisplayerScreen(sequenceOptimizer: SequenceOptimizer) : KtxScreen
 
         if (evaluator.isDone() || bestSequence.sequence.size == 0) {
             bestSequence = runner.getCurrentBestSequence()
+            evaluator.restart()
             evaluator.carControlFun = playbackFunctor(bestSequence)
+            println("evaluator done")
         }
 
         camera.update()
@@ -50,6 +52,7 @@ class OptimizerDisplayerScreen(sequenceOptimizer: SequenceOptimizer) : KtxScreen
 
 
                 displayEnv.draw()
+//                println("Drawing frame ${displayEnv.time}")
             } else {
                 println("still processing")
             }

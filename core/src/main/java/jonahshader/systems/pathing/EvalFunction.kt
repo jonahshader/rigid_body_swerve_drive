@@ -27,10 +27,10 @@ class EvalFunction(private val env: Environment, private val maxTime: Int, priva
 
     fun getFitness() = env.getCurrentFitness()
 
-    fun isDone() = env.isDone()
+    fun isDone() = env.isDone() || env.time >= maxTime
 
     fun runStep() {
-        if (!env.isDone() && env.time < maxTime) {
+        if (!env.isDone()) {
             env.update(carControlFun(env), timeStep)
         }
     }
