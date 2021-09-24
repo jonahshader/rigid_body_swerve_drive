@@ -12,6 +12,7 @@ import jonahshader.systems.softbody.PointMass
 import jonahshader.systems.softbody.SoftBody
 import jonahshader.systems.softbody.SoftBodyCar
 import jonahshader.systems.softbody.SpringConstants
+import jonahshader.systems.ui.TextRenderer
 import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
 import ktx.graphics.use
@@ -35,8 +36,7 @@ class SoftBodyCarScreen: KtxScreen {
 
         Gdx.input.inputProcessor = object : KtxInputAdapter {
             override fun scrolled(amountX: Float, amountY: Float): Boolean {
-                steerScalar *= 2f.pow(amountY)
-                println("steer scalar: $steerScalar")
+                steerScalar *= .5f.pow(amountY)
                 return true
             }
         }
@@ -117,6 +117,10 @@ class SoftBodyCarScreen: KtxScreen {
 //            RigidBodyApp.shapeDrawer.line(sb.getCenter(), Vector2(camera.position.x, camera.position.y), 0.03f)
             RigidBodyApp.shapeDrawer.line(Vector2(sb.getCenter()), Vector2(sb.getCenter()) + sb.getAverageVelocity(), 0.03f)
             sb.render()
+
+            TextRenderer.begin(RigidBodyApp.batch, viewport, TextRenderer.Font.LIGHT, 1f, 0f)
+            TextRenderer.drawText(sb.getCenter().x - 2, sb.getCenter().y - 2, "Steer factor: $steerScalar")
+            TextRenderer.end()
         }
     }
 

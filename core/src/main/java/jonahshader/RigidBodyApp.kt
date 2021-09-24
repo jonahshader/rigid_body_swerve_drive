@@ -2,10 +2,16 @@ package jonahshader
 
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.math.Vector2
 import jonahshader.screens.CarSimScreen
+import jonahshader.screens.OptimizerDisplayerScreen
 import jonahshader.screens.SoftBodyCarScreen
 import jonahshader.screens.SoftBodyScreen
 import jonahshader.systems.assets.Assets
+import jonahshader.systems.pathing.environment.Environment
+import jonahshader.systems.pathing.environment.Wall
+import jonahshader.systems.pathing.environment.Waypoint
+import jonahshader.systems.pathing.sequenceoptimizers.GeneticAlgorithm
 import jonahshader.systems.screen.ScreenManager
 import space.earlygrey.shapedrawer.ShapeDrawer
 
@@ -24,7 +30,15 @@ class RigidBodyApp : Game() {
         shapeDrawer = ShapeDrawer(batch, Assets.getSprites().findRegion("white_pixel"))
         ScreenManager.game = this
 //        ScreenManager.push(SimulationScreen())
-        ScreenManager.push(SoftBodyCarScreen())
+
+        val track = Environment()
+        track.addWall(Wall(Vector2(2f, 0f), Vector2(2f, 10f)))
+        track.addWall(Wall(Vector2(-2f, 0f), Vector2(-2f, 10f)))
+        track.addWaypoint(Waypoint(Vector2(2f, 11f), 1f))
+        track.addWaypoint(Waypoint(Vector2(3f, 0f), 1f))
+
+        ScreenManager.push(OptimizerDisplayerScreen(GeneticAlgorithm(track, 165 * 1, 1/165f, 10, 0.1f)))
+//        ScreenManager.push(SoftBodyCarScreen())
 //        ScreenManager.push(SoftBodyScreen())
     }
 

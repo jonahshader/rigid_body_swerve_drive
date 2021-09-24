@@ -9,7 +9,7 @@ import kotlin.math.pow
 
 open class SoftBody {
     val pointMasses = mutableListOf<PointMass>()
-    private val springs = mutableListOf<Spring>()
+    val springs = mutableListOf<Spring>()
     private val components = mutableListOf<Component>()
     private var totalMass = 0f
     private var returnVector = Vector2()
