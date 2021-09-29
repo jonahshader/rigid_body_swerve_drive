@@ -5,7 +5,7 @@ import java.util.*
 class CarControlStep(var steer: Float, var throttle: Float, var balance: Float) {
     constructor(toCopy: CarControlStep) : this(toCopy.steer, toCopy.throttle, toCopy.balance)
     companion object {
-        fun generateRandom(rand: Random) = CarControlStep(rand.nextFloat() * 2 - 1, rand.nextFloat() * 1.9f - .9f, -.5f)
+        fun generateRandom(rand: Random) = CarControlStep(rand.nextFloat() * 2 - 1, rand.nextFloat() * 1.9f - .9f, 0f)
 //fun generateRandom(rand: Random) = CarControlStep(rand.nextFloat() * 2 - 1, rand.nextFloat(), rand.nextFloat() * 2 - 1)
     }
 

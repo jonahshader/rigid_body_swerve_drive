@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.math.max
+import kotlin.math.pow
 
 class GeneticAlgorithm(private val env: Environment, private val maxTimeSteps: Int,
                        private var timeStep: Float, private val popSize: Int,
@@ -55,7 +56,7 @@ class GeneticAlgorithm(private val env: Environment, private val maxTimeSteps: I
         for (i in 1 until sequences.size) {
             val it = sequences[i]
             it.set(bestSequence)
-            it.mutate(rand, maxMutationRate * i.toFloat() / sequences.size)
+            it.mutate(rand, maxMutationRate * (i.toFloat() / sequences.size).pow(2))
         }
 
         bestFitness = maxFitness
