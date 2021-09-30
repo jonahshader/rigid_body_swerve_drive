@@ -15,8 +15,8 @@ open class SoftBodyForce(private val pointMass: PointMass): Component {
     }
 
     override fun render() {
-        RigidBodyApp.shapeDrawer.setColor(color)
-        RigidBodyApp.shapeDrawer.line(pointMass.position, pointMass.position + globalForce * lineMagnitudeScalar, .1f)
+//        RigidBodyApp.shapeDrawer.setColor(color)
+//        RigidBodyApp.shapeDrawer.line(pointMass.position, pointMass.position + globalForce * lineMagnitudeScalar, .1f)
     }
 
     override fun applyForce() {

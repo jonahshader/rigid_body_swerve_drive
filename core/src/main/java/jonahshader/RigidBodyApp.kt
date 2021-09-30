@@ -39,7 +39,7 @@ class RigidBodyApp : Game() {
 //        track.addWaypoint(Waypoint(Vector2(5f, 6f), 1f))
         track.addWaypoint(Waypoint(Vector2(15f, 0f), 1f))
 
-        ScreenManager.push(OptimizerDisplayerScreen(GeneticAlgorithm(track, 40 * 10, 1/20f, 10000, 1.0f)))
+        ScreenManager.push(OptimizerDisplayerScreen(GeneticAlgorithm(track, 10 * 10, 1/10f, 50000, 1f)))
 //        ScreenManager.push(SoftBodyCarScreen())
 //        ScreenManager.push(SoftBodyScreen())
     }
