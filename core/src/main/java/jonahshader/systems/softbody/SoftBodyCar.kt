@@ -20,7 +20,7 @@ class SoftBodyCar(private val size: Vector3, private val mass: Float): SoftBody(
 //    private val centerPoint = PointMass(mass/5, Vector2())
 
 //    private val sc = SpringConstants(150 * mass, mass * 15)
-private val sc = SpringConstants(20 * mass, mass * 1)
+private val sc = SpringConstants(2f * mass, mass * .5f)
     private val surface = tarmacSurface
     private val wp = WheelParams(8f * 0.0254f, 500f, 8000f, 1/3f)
 
