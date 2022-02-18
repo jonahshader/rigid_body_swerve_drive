@@ -7,6 +7,9 @@ import ktx.math.plus
 import ktx.math.times
 
 open class SoftBodyForce(private val pointMass: PointMass): Component {
+    companion object {
+        private const val ENABLE_RENDERING = false
+    }
     override val force = Vector2()
     var lineMagnitudeScalar = 1f
     val color = Color(1f, 0f, 0f, 1f)
@@ -15,8 +18,10 @@ open class SoftBodyForce(private val pointMass: PointMass): Component {
     }
 
     override fun render() {
-        RigidBodyApp.shapeDrawer.setColor(color)
-        RigidBodyApp.shapeDrawer.line(pointMass.position, pointMass.position + globalForce * lineMagnitudeScalar, .1f)
+        if (ENABLE_RENDERING) {
+            RigidBodyApp.shapeDrawer.setColor(color)
+            RigidBodyApp.shapeDrawer.line(pointMass.position, pointMass.position + globalForce * lineMagnitudeScalar, .1f)
+        }
     }
 
     override fun applyForce() {

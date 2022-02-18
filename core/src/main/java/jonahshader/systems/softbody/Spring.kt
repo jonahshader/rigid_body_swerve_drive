@@ -4,7 +4,9 @@ import com.badlogic.gdx.math.Vector2
 import jonahshader.RigidBodyApp
 import ktx.math.minus
 
-class Spring(val startPointMass: PointMass, val endPointMass: PointMass, val targetLength: Float = (startPointMass.position - endPointMass.position).len(), val sc: SpringConstants) {
+class Spring(val startPointMass: PointMass, val endPointMass: PointMass,
+             val targetLength: Float = (startPointMass.position - endPointMass.position).len(),
+             val sc: SpringConstants) {
     private var startToEnd = Vector2(endPointMass.position).sub(startPointMass.position)
     private var pLength = targetLength
     private val direction = Vector2(startToEnd).nor()
